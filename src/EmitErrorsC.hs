@@ -26,15 +26,6 @@ instance (Algebra sig m, Has AppEventEmit sig m) => Algebra (Error e :+: sig) (E
   alg hdl sig ctx = case sig of
     (L (L (Throw e))) -> do
       emitAppEvent "boom"
-      EmitErrorsC $ ErrorC $ hoistEither (Left e)
-    (L (R (Catch m h))) ->
-      EmitErrorsC $
-        ErrorC $
-          catchE (runCatch $ hdl (m <$ ctx)) (runCatch . hdl . (<$ ctx) . h)
-    (R other) -> alg hdl (R other) ctx
-
-runCatch ::
-     EmitErrorsC e m a
-  -> ExceptT e m a
-runCatch =
-  ExceptT . runError . runEmitErrorsC
+      -- defer to ErrorC for the actual functionality
+      EmitErrorsC $ alg (runEmitErrorsC . hdl) sig ctx
+    _ -> EmitErrorsC $ alg (runEmitErrorsC . hdl) sig ctx
