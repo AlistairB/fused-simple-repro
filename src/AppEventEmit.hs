@@ -1,3 +1,5 @@
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 module AppEventEmit
@@ -7,15 +9,10 @@ module AppEventEmit
 where
 
 import Control.Algebra (Has, send)
-import Control.Effect.Class (Effect, HFunctor)
-import GHC.Generics (Generic1)
+import GHC.Base (Type)
 
-data AppEventEmit m k
-  = EmitAppEvent String (m k)
-  deriving (Functor, Generic1)
-
-instance HFunctor AppEventEmit
-instance Effect AppEventEmit
+data AppEventEmit (m :: Type -> Type) k where
+  EmitAppEvent :: String -> AppEventEmit m ()
 
 emitAppEvent :: Has AppEventEmit sig m => String -> m ()
-emitAppEvent = send . flip EmitAppEvent (pure ())
+emitAppEvent = send . EmitAppEvent

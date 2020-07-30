@@ -11,10 +11,6 @@ import Data.Functor.Identity
 main :: IO ()
 main = hspec spec
 
--- to be removed with used effects 1.1
-liftEither :: Has (Throw e) sig m => Either e a -> m a
-liftEither = either throwError return
-
 spec :: Spec
 spec = parallel $
   fcontext "When emitting errors" $ do

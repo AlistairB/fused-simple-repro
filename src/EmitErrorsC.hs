@@ -5,14 +5,16 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE GADTs #-}
 module EmitErrorsC (EmitErrorsC(..)) where
 
-import Control.Algebra ((:+:) (..), Algebra (..), handleCoercible)
+import Control.Algebra ((:+:) (..), Algebra (..))
 import Control.Carrier.Error.Either
 import Control.Monad.IO.Class (MonadIO)
 import GHC.Base (Type)
 import AppEventEmit
 import Control.Monad.Except (ExceptT(..))
+import Control.Monad.Trans.Except (catchE)
 
 newtype EmitErrorsC (e :: Type) m a = EmitErrorsC {runEmitErrorsC :: ErrorC e m a}
   deriving (Functor, Applicative, Monad, MonadIO)
@@ -20,22 +22,10 @@ newtype EmitErrorsC (e :: Type) m a = EmitErrorsC {runEmitErrorsC :: ErrorC e m 
 hoistEither :: Applicative m => Either e a -> ExceptT e m a
 hoistEither e = ExceptT (pure e)
 
-instance (Effect sig, Algebra sig m, Has AppEventEmit sig m) => Algebra (Error e :+: sig) (EmitErrorsC e m) where
-  alg (L (L (Throw e))) = do
-    emitAppEvent "boom"
-    EmitErrorsC $ ErrorC $ hoistEither (Left e)
-  alg (L (R (Catch m h k))) =
-    EmitErrorsC $
-      ErrorC $
-        ExceptT $
-          runCatch m >>= \case
-            Left err -> runCatch (h err >>= k)
-            Right result -> runCatch (k result)
-
-  alg (R other) = EmitErrorsC (alg (R (handleCoercible other)))
-
-runCatch ::
-     EmitErrorsC e m a
-  -> m (Either e a)
-runCatch =
-  runError . runEmitErrorsC
+instance (Algebra sig m, Has AppEventEmit sig m) => Algebra (Error e :+: sig) (EmitErrorsC e m) where
+  alg hdl sig ctx = case sig of
+    (L (L (Throw e))) -> do
+      emitAppEvent "boom"
+      -- defer to ErrorC for the actual functionality
+      EmitErrorsC $ alg (runEmitErrorsC . hdl) sig ctx
+    _ -> EmitErrorsC $ alg (runEmitErrorsC . hdl) sig ctx
