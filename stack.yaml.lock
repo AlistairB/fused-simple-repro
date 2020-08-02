@@ -11,6 +11,13 @@ packages:
       sha256: e427a329bd733f5096e37bfcf5a211bb2e8555b88b7e87ac43607d2f455e3f66
   original:
     hackage: fused-effects-1.1.0.0
+- completed:
+    hackage: fused-effects-th-0.1.0.1@sha256:0c75b5e304f30b72e80e75563e97fc51f35b0ac62d70a4937d88aad175a3916a,2279
+    pantry-tree:
+      size: 333
+      sha256: a88b0f2d0869ec17f3cfe8476ca0823233c9dee835e9be6929663f8b20d6781c
+  original:
+    hackage: fused-effects-th-0.1.0.1
 snapshots:
 - completed:
     size: 531707
