@@ -4,7 +4,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 module AppEventEmit
-  ( -- emitAppEvent,
+  ( emitAppEvent,
     AppEventEmit (..),
   )
 where
