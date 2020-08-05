@@ -30,6 +30,7 @@ library:
   - transformers
   - either
   - mtl
+  - aeson
 
 executables:
   fused-simple-repro-exe:
