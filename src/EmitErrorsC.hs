@@ -22,7 +22,7 @@ newtype EmitErrorsC (e :: Type) m a = EmitErrorsC {runEmitErrorsC :: ErrorC e m 
 hoistEither :: Applicative m => Either e a -> ExceptT e m a
 hoistEither e = ExceptT (pure e)
 
-instance (Algebra sig m, Has AppEventEmit sig m) => Algebra (Error e :+: sig) (EmitErrorsC e m) where
+instance (Algebra sig m, Has (AppEventEmit String) sig m) => Algebra (Error e :+: sig) (EmitErrorsC e m) where
   alg hdl sig ctx = case sig of
     (L (L (Throw e))) -> do
       emitAppEvent "boom"
